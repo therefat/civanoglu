@@ -21,7 +21,9 @@
         <h2 class="section-heading">Best properties</h2>
         <div class="flex flex-wrap -mx-3 mt-10">
 
-                @include('components.single-property-card', [ 'width' => 'md:w-1/4 w-full'])
+                @foreach($latest_propertis as $propertis)
+                @include('components.single-property-card', [ 'property' => $propertis,'width' => 'md:w-1/4 w-full'])
+                @endforeach
 
         </div>
     </div>
@@ -33,6 +35,7 @@
             <h2 class="font-bold text-2xl text-4xl mt-12 mb-6">Lorem ipsum dolor sit amet, consectetur <br> adipisicing elit. Architecto ea laborum <span class="underline">modi nemo.</span></h2>
 
         </div>
+        <?php //echo  $latest_propertis ?>
 
     </div>
     </x-guest-layout>
