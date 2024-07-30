@@ -38,3 +38,8 @@ body {
 .fullwidth-button {
     @apply bg-gray-800 text-white px-6 py-2 text-center rounded w-full inline-block
 }
+.sticky-header-active {
+    background-color: #fff;
+}
+
+.sticky-header-active a{color:#333}
