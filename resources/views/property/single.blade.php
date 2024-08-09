@@ -146,7 +146,7 @@
                         <p class="mb-6 p-3 bg-green-100 text-green-700">{{Session::get('message')}}</p>
                     @endif
 
-                    <form action="" method="POST" enctype="multipart/form-data">
+                    <form action="{{route('property-inquiry', $property->id)}}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="">
