@@ -9,6 +9,8 @@ use App\Models\Property;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Psy\Util\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,6 +34,14 @@ class DatabaseSeeder extends Seeder
         $page->slug = "about-Us";
         $page->content = "about us";
         $page->save();
+
+        $user = new User();
+        $user->name = 'Refat Hossen';
+        $user->email = 'refat@website.com';
+        $user->email_verified_at = now();
+        $user->password = Hash::make('refat@website.com');
+        $user->remember_token = \Illuminate\Support\Str::random(10);
+        $user->save();
         Location::factory(10)->create();
         Property::factory(50)->create();
         Media::factory(500)->create();
