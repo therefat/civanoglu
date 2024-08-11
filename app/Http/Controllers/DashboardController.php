@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Log;
 use App\Models\Location;
+use App\Models\Media;
 use App\Models\Property;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -21,12 +23,12 @@ class DashboardController extends Controller
         $locations = Location::all();
         return view('admin.property.add',['locations' => $locations]);
     }
-    public function createProperty(Request $request)
+    public function validateProperty()
     {
-        $request->validate([
+        return [
             'name' => 'required',
             'name_tr' => 'required',
-            //'featured_image' => 'required|image',
+            'featured_image' => 'required',
             'location_id' => 'required',
             'price' => 'required|integer',
             'sale' => 'integer',
@@ -38,11 +40,21 @@ class DashboardController extends Controller
             'overview_tr' => 'required',
             'description' => 'required',
             'description_tr' => 'required',
-        ]);
+        ];
+    }
+    public function createProperty(Request $request)
+    {
+        $request->validate($this->validateProperty());
         $property = new Property();
         $property->name = $request->name;
         $property->name_tr = $request->name_tr;
-        $property->featured_image = 'pending';
+        $featured_image_name = time() . '-' . $request->featured_image->getClientOriginalName();
+        //stor file
+//        $request->featured_image->storeAs('public/uploads', $featured_image_name);
+      //  dd($featured_image_name);
+//        $request->image->move(public_path('uploads'), $featured_image_name);
+        $request->featured_image->storeAs('images', $featured_image_name, 'public');
+        $property->featured_image = $featured_image_name;
         $property->location_id = $request->location_id;
         $property->price = $request->price;
         $property->sale = $request->sale;
@@ -60,8 +72,44 @@ class DashboardController extends Controller
         $property->description_tr = $request->description_tr;
 
         $property->save();
+
+        foreach($request->gallery_images as $image) {
+            $gallery_image_name = time() . '-' . $image->getClientOriginalName();
+
+            try {
+                // Attempt to store the image
+                $stored = $image->storeAs('public/uploads', $gallery_image_name);
+
+                if ($stored) {
+                    // Attempt to save the media record to the database
+                    $media = new Media();
+                    $media->name = $gallery_image_name;
+                    $media->property_id = $property->id;
+
+                    if ($media->save()) {
+                        Log::info("Image and database record saved successfully: $gallery_image_name");
+                    } else {
+                        Log::error("Failed to save database record for image: $gallery_image_name");
+                    }
+                } else {
+                    Log::error("Failed to store image: $gallery_image_name");
+                }
+            } catch (Exception $e) {
+                Log::error("Error occurred: " . $e->getMessage());
+            }
+        }
         return redirect(route('dashboard-properties'))->with(['message' => 'Property is added.']);
 
+    }
+    public function deleteMedia($media_id) {
+        $media = Media::findOrFail($media_id);
+        // delete the file
+        Storage::delete('public/uploads/' . $media->name);
+
+        // remove row
+        $media->delete();
+
+        return back();
     }
     public function editProperty($property_id)
     {
